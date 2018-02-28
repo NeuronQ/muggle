@@ -36,16 +36,25 @@ let articles = [
   ...
 } 
 
-let stats_per_tag ^%{ ^str: %{words: ^int, articles: ^[]} }
-  = articles.map(\article ->
+let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
+  articles.map(\article ->
     article['tag'].map(\tag -> %{tag, article} })
   )
   .flatten()
   .group_by(\ta -> ta['tag'])
-  .dict_map(\tag, tag_articles -> [
+  .map(\tag, tag_articles -> [
     tag,
     %{'articles': tag_articles.map(\ta -> ta.article),
       'words': tag_articles.map(\ta -> ta.article.words).reduce(+)}
+   ])
+   .to_dict()
+
+let stats_per_tag =
+  articles.index_by(\article -> article['tags']
+  .map(\tag, articles -> [
+    tag,
+    %{'articles': articles,
+      'words': articles.map(\article -> article['words']).reduce(+)}
    ])
 
 let articles_by_tag = %{*: []}
@@ -54,11 +63,12 @@ for article in articles {
     articles_by_tag[tag] ++= article
   }
 }
-let stats_per_tag = %{}
+let stats_per_tag = %{} ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
 for tag, articles in articles_by_tag {
   let stats = %{'articles': articles, 'words': 0}
   for article in articles {
     stats['words'] += article['words']
   }
+  stats_per_tag[tag] = stats
 }
 ```
