@@ -25,11 +25,26 @@ An ultra-general-purpose programming language designed to be friendly to non-pro
 ```
 let answer = 42
 
-let myButton = document:select('#my-button') in {
-  def myButton.click {
+let my_button = document:select('#my-button') in {
+  def my_button.click {
     ...
   }
 }
+ 
+let articles = [
+  %{ 'title': '...', 'tags': ['tagA', 'tagB', ...], 'words': 420 },
+  ...
+} 
 
-
+let stats_per_tag ^{ str -> {words ^int, articles ^[]} }
+  = articles.map(\article ->
+    article['tag'].map(\tag -> %{tag, article} })
+  )
+  ~flatten()
+  .group_by(\ta -> ta['tag'])
+  .dict_map(\tag, tag_articles -> [
+    tag,
+    %{'articles': tag_articles.map(\ta -> ta.article),
+      'words': tag_articles.map(\ta -> ta.article.words).reduce(+)}
+   ])
 ```
