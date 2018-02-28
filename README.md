@@ -19,3 +19,17 @@ An ultra-general-purpose programming language designed to be friendly to non-pro
 - **simple but good support for concurrency** - figure out a way to combine the intuitiveness of async/await with the simplicity/power of channels (think go-routines)
 - optimise for **programmer happiness** but take into account that the language will be used by *two* classes of programmers at the same time: (1) *domain experts* or *generalists* and (2) *professional software developers* - both need to also *be happy with the code written by the other camp!*
 - **multiple syntaxes** with a *standardized intermediary syntax for ASTs*
+
+**A quick taste of Muggle:**
+
+```
+let answer = 42
+
+let myButton = document:select('#my-button') in {
+  def myButton.click {
+    ...
+  }
+}
+
+
+```
