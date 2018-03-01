@@ -95,13 +95,13 @@ for tag, articles in articles_by_tag {
 }
 
 // imperative-style but immutable, aka "list/dict comprehension"
-let articles_by_tag = {for article in articles {
+let articles_by_tag = for article in articles {
   for tag in article.tags { => tag: article }
-}}
-let stats_per_tag = {for tag, articles in articles_by_tag {
+}
+let stats_per_tag = for tag, articles in articles_by_tag {
   => tag: %{
     articles,
-    words: sum(for* a in articles { => a.words })
+    words: sum(~for a in articles { => a.words })
   }
 }
 ```
