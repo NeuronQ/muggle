@@ -75,12 +75,12 @@ let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} }
     tag,
     %{articles
       'words': articles | map_reduce(getter('tags'), (+))}
-   ])
+  ])
 
-// imperative
-let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } = %{}
+// imperative, procedural, mutable aka "old school"
+var stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } = %{}
 // `%default([]){}` is just sugar for `default_dict([])()`
-let articles_by_tag = %default([]){} // type ^%default{^str: ^[]}
+var articles_by_tag = %default([]){} // type ^%default{^str: ^[]}
 for article in articles {
   for tag in article.tags {
     articles_by_tag[tag] ++= article
@@ -89,8 +89,19 @@ for article in articles {
 for tag, articles in articles_by_tag {
   let stats = %{'articles': articles, 'words': 0}
   for article in articles {
-    stats.words += article['words']
+    stats.words += article.words
   }
   stats_per_tag[tag] = stats
+}
+
+// imperative-style but immutable, aka "list/dict comprehension"
+let articles_by_tag = {for article in articles {
+  for tag in article.tags { => tag: article }
+}}
+let stats_per_tag = {for tag, articles in articles_by_tag {
+  => tag: %{
+    articles,
+    words: sum(for* a in articles { => a.words })
+  }
 }
 ```
