@@ -78,8 +78,9 @@ let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
    ])
 
 // imperative
-let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
-let articles_by_tag = dict(default=[])
+let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } = %{}
+// `%default([]){}` is just sugar for `default_dict([])()`
+let articles_by_tag = %default([]){} // type ^%default{^str: ^[]}
 for article in articles {
   for tag in article.tags {
     articles_by_tag[tag] ++= article
