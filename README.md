@@ -36,6 +36,7 @@ let articles = [
   ...
 } 
 
+// functional naive
 let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
   articles | map(\article ->
     article.tag.map(\tag -> %{tag, article} })
@@ -49,6 +50,7 @@ let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
   ])
   | to_dict()
 
+// functional with destructuring
 let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
   articles | map(\article ->
     article.tag | map(\tag -> [tag, article] })
@@ -66,15 +68,17 @@ let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
    ])
    .to_dict()
 
-let stats_per_tag =
-  articles.index_by(getter('tags'))
+// functional idiomatic
+let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
+  = articles | index_by(getter('tags'))
   | map(\tag, articles -> [
     tag,
     %{articles
-      'words': articles | map_reduce(getter('tags'), (+))
+      'words': articles | map_reduce(getter('tags'), (+))}
    ])
 
-let stats_per_tag = %{} ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
+// imperative
+let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
 let articles_by_tag = dict(default=[])
 for article in articles {
   for tag in article.tags {
