@@ -32,76 +32,76 @@ let my_button = document | select('#my-button') in {
 };
  
 let articles = [
-  %{ 'title': '...', 'tags': ['tagA', 'tagB', ...], 'words': 420 },
+  %{ 'title': '...', 'tags': ['tagA', 'tagB', ...], 'words': 420 }%,
   ...
 ];
 
 // functional naive
 let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
-  articles | map(\article ->
-    article.tag.map(\tag -> %{tag, article} })
-  )
-  | flatten()
-  | group_by(\tag_article -> tag_article.article)
-  | map(\tag__tag_articles -> [
+  articles | map article {
+    article.tags | map tag { %{tag, article}% }
+  })
+  | flatten
+  | group_by tag_article { tag_article.article }
+  | map tag__tag_articles { [
     tag__tag_articles[0],
-    %{'articles': tag__tag_articles[1] | map(\ta -> ta.article),
-      'words': tag__tag_articles[1] | map(\ta -> ta.article.words) | reduce(+)}
-  ])
-  | to_dict();
+    %{ 'articles': tag__tag_articles[1] | map ta { ta.article },
+       'words': tag__tag_articles[1] | map ta { ta.article.words } | reduce (+) }%
+  ] }
+  | to_dict;
 
 // functional with destructuring
 let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
-  articles | map(\article ->
-    article.tag | map(\tag -> [tag, article] })
-  )
-  | flatten()
-  | group_by(\[tag, article] -> tag)
-  | map(\[tag, tag_articles] -> [
+  articles | map article {
+    article.tag | map tag { [tag, article] }
+  }
+  | flatten
+  | group_by [tag, article] { tag }
+  | map [tag, tag_articles] { [
     tag,
-    tag_articles | map(\tag, article -> article)
-  ])
-  | map(\tag, articles -> [
+    tag_articles | map tag, article { article }
+  ] }
+  | map tag, articles { [
     tag,
-    %{articles
-      'words': articles.map(\a -> a.words).reduce((+))}
-   ])
-  | to_dict();
+    %{ articles
+       'words': articles | map a { a.words } | reduce (+) }%
+   ] }
+  | to_dict;
 
 // functional idiomatic
 let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} }
   = articles | index_by(getter('tags'))
-  | map(\tag, articles -> [
+  | map tag, articles { [
     tag,
-    %{articles
-      'words': articles | map_reduce(getter('tags'), (+))}
-  ]);
+    %{ articles
+       'words': articles | map_reduce(getter('tags'), (+)) }%
+  ] };
 
 // imperative, procedural, mutable aka "old school"
 var stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } = %{};
 // `%default([]){}` is just sugar for `default_dict([])()`
 var articles_by_tag = %default([]){} // type ^%default{^str: ^[]};
-for (articles) article {
-  for (article.tags) tag {
+articles | for article {
+  article.tags | for tag {
     articles_by_tag[tag] ++= article;
   }
 };
-for (articles_by_tag) tag, articles {
+articles_by_tag | for tag, articles {
   let stats = %{'articles': articles, 'words': 0};
-  for (articles) article {
+  articles | for article {
     stats.words += article.words;
   };
   stats_per_tag[tag] = stats;
 };
 
 // imperative-style but immutable, aka "list/dict comprehension"
-let articles_by_tag = for (articles) article {
-  for (article.tags) tag { => tag: article }
+let articles_by_tag = articles | each article {
+  article.tags | each tag { => tag: article }
 };
-let stats_per_tag = for (articles_by_tag) tag, articles {
+let stats_per_tag = articles_by_tag | each tag, articles {
   => tag: %{
     articles,
-    words: sum(~for (articles) a { => a.words })
+    words: sum(articles | ~each a { => a.words })
   }
 };
 ```
