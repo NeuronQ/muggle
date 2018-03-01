@@ -25,7 +25,7 @@ An ultra-general-purpose programming language designed to be friendly to non-pro
 ```
 let answer = 42
 
-let my_button = document:select('#my-button') in {
+let my_button = document | select('#my-button') in {
   def my_button << click {
     ...
   }
@@ -37,37 +37,54 @@ let articles = [
 } 
 
 let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
-  articles.map(\article ->
-    article::tag.map(\tag -> %{tag, article} })
+  articles | map(\article ->
+    article.tag.map(\tag -> %{tag, article} })
   )
-  .flatten()
-  .group_by(\ta -> ta::tag)
-  .map(\tag, tag_articles -> [
+  | flatten()
+  | group_by(\tag_article -> tag_article.article)
+  | map(\tag__tag_articles -> [
+    tag__tag_articles[0],
+    %{'articles': tag__tag_articles[1] | map(\ta -> ta.article),
+      'words': tag__tag_articles[1] | map(\ta -> ta.article.words) | reduce(+)}
+  ])
+  | to_dict()
+
+let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
+  articles | map(\article ->
+    article.tag | map(\tag -> [tag, article] })
+  )
+  | flatten()
+  | group_by(\[tag, article] -> tag)
+  | map(\[tag, tag_articles] -> [
     tag,
-    %{'articles': tag_articles.map(\ta -> ta::article),
-      'words': tag_articles.map(\ta -> ta::article::words).reduce(+)}
+    tag_articles | map(\tag, article -> article)
+  ])
+  | map(\tag, articles -> [
+    tag,
+    %{articles
+      'words': articles.map(\a -> a.words).reduce((+))}
    ])
    .to_dict()
 
 let stats_per_tag =
-  articles.index_by(\article -> article['tags'])
-  .map(\tag, articles -> [
+  articles.index_by(getter('tags'))
+  | map(\tag, articles -> [
     tag,
-    %{'articles': articles,
-      'words': articles.map(\article -> article['words']).reduce(+)}
+    %{articles
+      'words': articles | map_reduce(getter('tags'), (+))
    ])
 
-let articles_by_tag = %{*: []}
+let stats_per_tag = %{} ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
+let articles_by_tag = dict(default=[])
 for article in articles {
-  for tag in article::tags {
+  for tag in article.tags {
     articles_by_tag[tag] ++= article
   }
 }
-let stats_per_tag = %{} ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
 for tag, articles in articles_by_tag {
   let stats = %{'articles': articles, 'words': 0}
   for article in articles {
-    stats::words += article['words']
+    stats.words += article['words']
   }
   stats_per_tag[tag] = stats
 }
