@@ -23,18 +23,18 @@ An ultra-general-purpose programming language designed to be friendly to non-pro
 **A quick taste of Muggle:**
 
 ```
-let answer = 42
+let answer = 42;
 
 let my_button = document | select('#my-button') in {
   def my_button << click {
     ...
   }
-}
+};
  
 let articles = [
   %{ 'title': '...', 'tags': ['tagA', 'tagB', ...], 'words': 420 },
   ...
-} 
+];
 
 // functional naive
 let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
@@ -48,7 +48,7 @@ let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
     %{'articles': tag__tag_articles[1] | map(\ta -> ta.article),
       'words': tag__tag_articles[1] | map(\ta -> ta.article.words) | reduce(+)}
   ])
-  | to_dict()
+  | to_dict();
 
 // functional with destructuring
 let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
@@ -66,7 +66,7 @@ let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
     %{articles
       'words': articles.map(\a -> a.words).reduce((+))}
    ])
-   .to_dict()
+  | to_dict();
 
 // functional idiomatic
 let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} }
@@ -75,33 +75,33 @@ let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} }
     tag,
     %{articles
       'words': articles | map_reduce(getter('tags'), (+))}
-  ])
+  ]);
 
 // imperative, procedural, mutable aka "old school"
-var stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } = %{}
+var stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } = %{};
 // `%default([]){}` is just sugar for `default_dict([])()`
-var articles_by_tag = %default([]){} // type ^%default{^str: ^[]}
-for article in articles {
-  for tag in article.tags {
-    articles_by_tag[tag] ++= article
+var articles_by_tag = %default([]){} // type ^%default{^str: ^[]};
+for (articles) article {
+  for (article.tags) tag {
+    articles_by_tag[tag] ++= article;
   }
-}
-for tag, articles in articles_by_tag {
-  let stats = %{'articles': articles, 'words': 0}
-  for article in articles {
-    stats.words += article.words
-  }
-  stats_per_tag[tag] = stats
-}
+};
+for (articles_by_tag) tag, articles {
+  let stats = %{'articles': articles, 'words': 0};
+  for (articles) article {
+    stats.words += article.words;
+  };
+  stats_per_tag[tag] = stats;
+};
 
 // imperative-style but immutable, aka "list/dict comprehension"
-let articles_by_tag = for article in articles {
-  for tag in article.tags { => tag: article }
-}
-let stats_per_tag = for tag, articles in articles_by_tag {
+let articles_by_tag = for (articles) article {
+  for (article.tags) tag { => tag: article }
+};
+let stats_per_tag = for (articles_by_tag) tag, articles {
   => tag: %{
     articles,
-    words: sum(~for a in articles { => a.words })
+    words: sum(~for (articles) a { => a.words })
   }
-}
+};
 ```
