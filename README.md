@@ -37,7 +37,7 @@ let articles = [
 } 
 
 // functional naive
-let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
+let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
   articles | map(\article ->
     article.tag.map(\tag -> %{tag, article} })
   )
@@ -51,7 +51,7 @@ let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
   | to_dict()
 
 // functional with destructuring
-let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
+let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } =
   articles | map(\article ->
     article.tag | map(\tag -> [tag, article] })
   )
@@ -69,7 +69,7 @@ let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } =
    .to_dict()
 
 // functional idiomatic
-let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
+let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} }
   = articles | index_by(getter('tags'))
   | map(\tag, articles -> [
     tag,
@@ -78,7 +78,7 @@ let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} }
    ])
 
 // imperative
-let stats_per_tag ^%{ ^str: %{'words': ^int, 'articles': ^[]} } = %{}
+let stats_per_tag ^%{ ^str: ^%{'words': ^int, 'articles': ^[]} } = %{}
 // `%default([]){}` is just sugar for `default_dict([])()`
 let articles_by_tag = %default([]){} // type ^%default{^str: ^[]}
 for article in articles {
