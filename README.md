@@ -105,3 +105,78 @@ let stats_per_tag = articles_by_tag | each tag, articles {
   }
 };
 ```
+# Types
+
+We're going to separate the possible type constraints (aka "the type system"),
+for the collection of core baked-in standard types (that satisfy some of these contraints).
+
+## Type constraints
+
+* its **Interface** - what function/methods it supports (interaces don't need to
+  be implemented explictly by a type, we use *duck typing* like in Go and in dynamic laguages);
+  we specify an interface like so: `^Enumerable` *-- not that "inteface duck-typing" is
+  basically a form of structural typing*
+
+* **structural contraints** - defined like `^{ str: {'words': int, 'articles': []} }`
+  *-- obviously another form of structural typing (ight contain dependent typing features)**
+
+* we can also have **named structural contraints** - like `^.Foo`
+
+* explicit types, useful mainly for working with ADTs - like `^:Node`
+
+## Core types
+
+Scalars:
+
+```
+type interface Number {
+  include Comparable;
+  (+) ^^ (Int, Int) -> Int;
+  (/) ^^ (Int, Int) -> Int?;
+}
+
+// Implementations: Int8, UInt8, Int64, BigInt etc.
+```
+
+```Str```
+
+```Char```
+
+```Float```
+
+```Bool```
+
+## Compound
+
+```
+let li = [1, "one", true];
+let nos ^Number = [1, 2+3i, 1.04, 2e-3];
+let ints ^Int8 = [2; 3; 4];
+
+let pair = ("x", 42);
+
+let set_of_words = #{"yes", "no"};
+
+type rec Point(x ^Float, y ^Float);
+let p1 = Point(1.1, 2);
+
+fun (Point) quadrant() {
+  if (this.x >= 0) {
+    if (this.y >= 0) { 1 }
+    else { 4 }
+  } else {
+    if (y >= 0) { 2 }
+    else { 3 }
+  }
+}
+let qdr = p1:quadrant;
+
+type class Cat(
+  // these two have getters/setters generated
+  name ^Str,
+  age ^Int,
+  _code ^Str, // private (no getter/setter)
+);
+meth (Cat) say(msd ^Str) {
+}
+```
